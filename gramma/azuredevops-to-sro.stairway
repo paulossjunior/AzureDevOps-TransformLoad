@@ -1,0 +1,148 @@
+Configuration {
+    software: "azuredevopstosro"
+    about: "Mapping MS AzureDevOps to SRO Database"
+    package_path: "br.nemo.immigrant.ontology.transformaload.msdevops.sro"
+    database_name: "sro"
+    bootstrap_servers: "localhost:9092"
+    topic_pattern: "application.msazuredevops"
+    framework: "springboot"
+
+}
+
+# "Subontology addresses the events that occur in a project that adopts Scrum, such as the Scrum ceremonies"
+module ScrumProcess {
+
+    enum ScrumProjectType{
+        SCRUMCOMPLEXPROJECT, fullName : "Scrum Complex Project"
+        SCRUMATOMICPROJECT, fullName : "Scrum Atomic Project"
+    }
+
+    enum ScrumDevelopmentTaskType{
+        PERFORMED, fullName : "Scrum Perfomed Development Task"
+        INTENDED , fullName : "Scrum Intended Development Task"
+    }
+
+    # "Type of Ceremony"
+    enum CeremonyType{
+        PLANNING, fullName: "Planning Meeting"
+        DAILY, fullName: "Daily Standup Meeting"
+        REVIEW, fullName: "Review Meeting"
+        RETROSPECTIVE, fullName: "Retrospetive Meeting"
+    }
+
+    # "Is a Software Project that adopts Scrum in its process (Scrum Process)."
+    entity ScrumProject{
+        name: string
+        description: string
+        startDate: date
+        endDate: date
+        url: string
+        externalId: string unique
+        internalId: string unique
+
+        scrumProcess OneToOne ScrumProcess create
+        type uses ScrumProjectType
+
+        # "Mapping MS Project to Scrum Project"
+        map Project2ScrumProject {
+            source "project"
+            equal from "name" to name
+            equal from "description" to description
+            equal from "id" to externalId
+            equal from "internal_uuid" to internalId
+            equal from "url" to url
+        }
+
+    }
+
+    # "Is a General Performed Project Process (i.e., it is an overall process performed in a project) composed        of two types of Specific Performed Project Process."
+    entity ScrumProcess{
+        name: string
+        description: string
+        startDate: date
+        endDate: date
+        url: string
+        externalId: string unique
+        internalId: string unique
+
+        sprints OneToMany Sprint
+    }
+
+     # "Aims at defining and prioritizing the functionalities to be produced in the Scrum Project."
+     entity ProductBacklogDefinition {
+        name: string
+        description: string
+        startDate: date
+        endDate: date
+        url: string
+        externalId: string unique
+        internalId: string unique
+     }
+
+    # "A time-box used to perform a project activity."
+    entity Sprint {
+       name: string
+       description: string
+       startDate: date
+       endDate: date
+       url: string
+       externalId: string unique
+       internalId: string unique
+
+        scrumDevelopmentTask ManyToMany ScrumDevelopmentTask
+
+       # "Mapping MS Interaction to Sprint"
+       map Interaction2Sprint {
+           source "interaction"
+           equal from "name" to name
+           equal from "url" to url
+           equal from "id" to externalId
+           equal from "internal_uuid" to internalId
+       }
+    }
+
+    # "The ceremonies that compose a Sprint are Planning Meeting, Daily Standup Meeting, Review Meeting and Retrospective Meeting."
+    entity Ceremony {
+        name: string
+        description: string
+        startDate: date
+        endDate: date
+        url: string
+        externalId: string unique
+        internalId: string unique
+
+        type uses CeremonyType
+
+    }
+
+    enum SucessfullyPerformedType{
+        NONSUCESSFULLY, fullName: "Non-Successfully Performed Scrum Development Task"
+        SUCCESSFULLY, fullName: "Successfully Performed Scrum Development Task"
+    }
+
+    # "Is a Performed activity in a Scrum Project."
+    entity ScrumDevelopmentTask {
+        name: string
+        description: string
+        startDate: date
+        endDate: date
+        url: string
+        externalId: string unique
+        internalId: string unique
+
+        type uses ScrumDevelopmentTaskType
+        sucessfully uses SucessfullyPerformedType
+
+        # "Mapping MS Workitem to Task"
+        map Workitem2Task {
+            source "workitem"
+            equal from "id" to externalId
+            equal from "internal_uuid" to internalId
+            equal from "fields.System.Title" to name
+            when "fields.System.WorkItemType" equal "Task"
+        }
+
+    }
+
+}
+

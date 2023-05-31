@@ -1,0 +1,103 @@
+@startuml ScrumProcess
+enum ScrumProjectType {
+    SCRUMCOMPLEXPROJECT
+    SCRUMATOMICPROJECT
+}
+enum ScrumDevelopmentTaskType {
+    PERFORMED
+    INTENDED
+}
+enum CeremonyType {
+    PLANNING
+    DAILY
+    REVIEW
+    RETROSPECTIVE
+}
+enum SucessfullyPerformedType {
+    NONSUCESSFULLY
+    SUCCESSFULLY
+}
+
+class ScrumProject {
+string: name
+string: description
+date: startDate
+date: endDate
+string: url
+string: externalId
+string: internalId
+
+ScrumProcess: scrumprocess
+}
+
+ScrumProject "1" -- "1" ScrumProjectType : type>
+ScrumProject "1" -- "1" ScrumProcess : scrumprocess >
+
+class ScrumProcess {
+string: name
+string: description
+date: startDate
+date: endDate
+string: url
+string: externalId
+string: internalId
+
+Sprint: sprints
+}
+
+
+ScrumProcess "1" -- "0..*" Sprint : sprints >
+
+class ProductBacklogDefinition {
+string: name
+string: description
+date: startDate
+date: endDate
+string: url
+string: externalId
+string: internalId
+
+}
+
+
+
+class Sprint {
+string: name
+string: description
+date: startDate
+date: endDate
+string: url
+string: externalId
+string: internalId
+
+}
+
+
+
+class Ceremony {
+string: name
+string: description
+date: startDate
+date: endDate
+string: url
+string: externalId
+string: internalId
+
+}
+
+Ceremony "1" -- "1" CeremonyType : type>
+
+class ScrumDevelopmentTask {
+string: name
+string: description
+date: startDate
+date: endDate
+string: url
+string: externalId
+string: internalId
+
+}
+
+ScrumDevelopmentTask "1" -- "1" ScrumDevelopmentTaskType : type>,ScrumDevelopmentTask "1" -- "1" SucessfullyPerformedType : sucessfully>
+
+@enduml
